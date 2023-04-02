@@ -44,7 +44,7 @@ function createTranslations() {
 
                     files.forEach((file) => {
                         const filePath2 = path.join(filePath, file);
-                        const fileContent = fs.readFileSync(filePath2).toString();
+                        const fileContent = fs.readFileSync(filePath2, 'utf8');
                         const regex = /data:\s*{([\s\S]*?)},/;
                         const match = fileContent.match(regex);
                         if (match) {
@@ -62,6 +62,7 @@ function createTranslations() {
             }
         });
     }
+
 
     function createTranslationFolders(translationsDir) {
         // Create a `translations` directory if it doesn't already exist
@@ -81,14 +82,19 @@ function createTranslations() {
             for (const subkey in translations[key]) {
                 const translationsFile = path.join(keyDir, `${subkey}.json`);
                 const translationsJson = JSON.stringify(translations[key][subkey], null, 2);
-                const prettierOptions = prettier.resolveConfig.sync(translationsFile);
-                const formattedJson = prettier.format(translationsJson, prettierOptions);
+                const formattedJson = prettier.format(translationsJson, {semi: false, parser: "json"});
                 fs.writeFileSync(translationsFile, formattedJson);
             }
         }
     }
 
     readDirectories(argv.dir);
+
+    if (!Object.keys(translations).length) {
+        console.error('No keys found');
+        return;
+    }
+
     createTranslationFolders(argv.output);
 
     console.log("Translations created successfully!");
